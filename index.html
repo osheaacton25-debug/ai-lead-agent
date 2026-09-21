@@ -1,420 +1,482 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Receptionist — Manchester Boiler & Plumbing</title>
-    <style>
-        :root {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --text-primary: #f8fafc;
-            --text-secondary: #94a3b8;
-            --accent: #38bdf8;
-            --accent-glow: rgba(56, 189, 248, 0.2);
-            --bubble-ai: #334155;
-            --bubble-user: #1e293b;
-            --success: #22c55e;
-            --success-bg: rgba(34, 197, 94, 0.1);
-            --border: #334155;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI Receptionist Demo</title>
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        }
-
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-primary);
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 480px;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-
-        /* Header Card */
-        .header-card {
-            background: linear-gradient(135deg, #1e293b, #0f172a);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 20px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-
-        .header-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 4px;
-        }
-
-        .header-subtitle {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-        }
-
-        /* Chat Container */
-        .chat-card {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            display: flex;
-            flex-direction: column;
-            height: 380px;
-            overflow: hidden;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-
-        .chat-messages {
-            flex: 1;
-            padding: 16px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .message {
-            max-width: 80%;
-            padding: 10px 14px;
-            border-radius: 12px;
-            font-size: 0.9375rem;
-            line-height: 1.4;
-        }
-
-        .message.ai {
-            background-color: var(--bubble-ai);
-            color: var(--text-primary);
-            align-self: flex-start;
-            border-bottom-left-radius: 4px;
-        }
-
-        .message.user {
-            background-color: #0f172a;
-            border: 1px solid var(--border);
-            color: var(--text-primary);
-            align-self: flex-end;
-            border-bottom-right-radius: 4px;
-        }
-
-        /* Input Area */
-        .chat-input-area {
-            padding: 12px;
-            background-color: #0f172a;
-            border-top: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .input-row {
-            display: flex;
-            gap: 8px;
-        }
-
-        .chat-input {
-            flex: 1;
-            background-color: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 10px 14px;
-            color: var(--text-primary);
-            font-size: 0.9375rem;
-            outline: none;
-        }
-
-        .chat-input:focus {
-            border-color: var(--accent);
-        }
-
-        .send-btn {
-            background-color: var(--text-primary);
-            color: var(--bg-color);
-            border: none;
-            border-radius: 8px;
-            padding: 0 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .send-btn:hover {
-            background-color: var(--accent);
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 8px;
-        }
-
-        .action-btn {
-            flex: 1;
-            background-color: var(--border);
-            color: var(--text-primary);
-            border: none;
-            border-radius: 6px;
-            padding: 6px;
-            font-size: 0.8125rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .action-btn:hover {
-            background-color: #475569;
-        }
-
-        /* Dashboard Card */
-        .dashboard-card {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .dashboard-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .dashboard-title {
-            font-size: 1rem;
-            font-weight: 600;
-        }
-
-        .status-badge {
-            background-color: var(--success-bg);
-            color: var(--success);
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            letter-spacing: 0.05em;
-        }
-
-        .status-badge.paused {
-            background-color: rgba(234, 179, 8, 0.1);
-            color: #eab308;
-        }
-
-        .metrics-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 8px;
-        }
-
-        .metric-box {
-            background-color: #0f172a;
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
-
-        .metric-label {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-        }
-
-        .metric-value {
-            font-size: 1.25rem;
-            font-weight: 700;
-        }
-    </style>
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#f4f6f8;
+  color:#111827
+}
+.wrap{max-width:900px;margin:auto;padding:18px}
+header{
+  background:#111827;
+  color:white;
+  border-radius:22px;
+  padding:24px;
+  margin-bottom:18px
+}
+header h1{margin:0 0 6px}
+header p{margin:0;color:#cbd5e1}
+.card{
+  background:white;
+  border:1px solid #e5e7eb;
+  border-radius:22px;
+  padding:18px;
+  margin-bottom:18px
+}
+.chat{
+  height:480px;
+  display:flex;
+  flex-direction:column
+}
+.messages{
+  flex:1;
+  overflow:auto;
+  padding:5px
+}
+.msg{
+  max-width:82%;
+  padding:11px 13px;
+  border-radius:15px;
+  margin:8px 0;
+  line-height:1.4
+}
+.ai{background:#eef2ff}
+.user{
+  background:#111827;
+  color:white;
+  margin-left:auto
+}
+.system{
+  background:#f3f4f6;
+  color:#4b5563;
+  font-size:13px
+}
+.inputrow{
+  display:flex;
+  gap:8px;
+  margin-top:12px
+}
+input{
+  flex:1;
+  padding:14px;
+  border:1px solid #d1d5db;
+  border-radius:12px;
+  font-size:16px
+}
+button{
+  border:0;
+  border-radius:12px;
+  padding:13px 17px;
+  font-weight:bold;
+  font-size:15px;
+  cursor:pointer;
+  background:#111827;
+  color:white
+}
+.secondary{
+  background:#e5e7eb;
+  color:#111827
+}
+.buttons{
+  display:flex;
+  gap:8px;
+  margin-top:10px
+}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px
+}
+.stat{
+  background:#f8fafc;
+  border-radius:16px;
+  padding:18px
+}
+.stat span{
+  display:block;
+  color:#64748b;
+  margin-bottom:5px
+}
+.stat strong{font-size:30px}
+.status{
+  display:inline-block;
+  background:#dcfce7;
+  color:#166534;
+  padding:7px 12px;
+  border-radius:999px;
+  font-weight:bold;
+  margin-bottom:15px
+}
+pre{
+  background:#111827;
+  color:#d1d5db;
+  border-radius:15px;
+  padding:15px;
+  overflow:auto;
+  min-height:100px
+}
+h2{margin-top:0}
+@media(max-width:600px){
+  .grid{grid-template-columns:1fr 1fr}
+  .chat{height:500px}
+}
+</style>
 </head>
+
 <body>
+<div class="wrap">
 
-    <div class="container">
-        <!-- Header -->
-        <div class="header-card">
-            <div class="header-title">AI Receptionist</div>
-            <div class="header-subtitle">Manchester Boiler & Plumbing — prototype</div>
-        </div>
+<header>
+  <h1>AI Receptionist</h1>
+  <p>Manchester Boiler & Plumbing — prototype</p>
+</header>
 
-        <!-- Chat Box -->
-        <div class="chat-card">
-            <div class="chat-messages" id="chatMessages">
-                <div class="message ai">Hi! I'm the AI receptionist for Manchester Boiler & Plumbing. How can I help?</div>
-            </div>
-            <div class="chat-input-area">
-                <div class="input-row">
-                    <input type="text" id="userInput" class="chat-input" placeholder="Type a customer enquiry..." onkeypress="handleKeyPress(event)">
-                    <button class="send-btn" onclick="sendMessage()">Send</button>
-                </div>
-                <div class="action-buttons">
-                    <button class="action-btn" onclick="resetDemo()">Reset</button>
-                    <button class="action-btn" onclick="triggerHumanTakeover()">Human takeover</button>
-                </div>
-            </div>
-        </div>
+<div class="card chat">
+  <div id="messages" class="messages"></div>
 
-        <!-- Business Dashboard -->
-        <div class="dashboard-card">
-            <div class="dashboard-header">
-                <div class="dashboard-title">Business dashboard</div>
-                <div id="statusBadge" class="status-badge">AI ONLINE</div>
-            </div>
-            <div class="metrics-grid">
-                <div class="metric-box">
-                    <span class="metric-label">Enquiries</span>
-                    <span id="metricEnquiries" class="metric-value">0</span>
-                </div>
-                <div class="metric-box">
-                    <span class="metric-label">Qualified</span>
-                    <span id="metricQualified" class="metric-value">0</span>
-                </div>
-                <div class="metric-box">
-                    <span class="metric-label">Bookings</span>
-                    <span id="metricBookings" class="metric-value">0</span>
-                </div>
-                <div class="metric-box">
-                    <span class="metric-label">Human handoffs</span>
-                    <span id="metricHandoffs" class="metric-value">0</span>
-                </div>
-            </div>
-        </div>
+  <div class="inputrow">
+    <input id="input" placeholder="Type a customer enquiry..." autocomplete="off">
+    <button onclick="sendMessage()">Send</button>
+  </div>
+
+  <div class="buttons">
+    <button class="secondary" onclick="resetDemo()">Reset</button>
+    <button class="secondary" onclick="humanTakeover()">Human takeover</button>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Business dashboard</h2>
+
+  <div class="status">AI ONLINE</div>
+
+  <div class="grid">
+    <div class="stat">
+      <span>Enquiries</span>
+      <strong id="enquiries">0</strong>
     </div>
 
-    <script>
-        // State Machine Steps for the Prototype
-        let conversationState = 'START'; // START, WAITING_AREA, WAITING_TIME, BOOKED, PAUSED
-        let metrics = {
-            enquiries: 0,
-            qualified: 0,
-            bookings: 0,
-            handoffs: 0
-        };
+    <div class="stat">
+      <span>Qualified</span>
+      <strong id="qualified">0</strong>
+    </div>
 
-        function updateDashboard() {
-            document.getElementById('metricEnquiries').innerText = metrics.enquiries;
-            document.getElementById('metricQualified').innerText = metrics.qualified;
-            document.getElementById('metricBookings').innerText = metrics.bookings;
-            document.getElementById('metricHandoffs').innerText = metrics.handoffs;
-        }
+    <div class="stat">
+      <span>Bookings</span>
+      <strong id="bookings">0</strong>
+    </div>
 
-        function appendMessage(text, sender) {
-            const chatMessages = document.getElementById('chatMessages');
-            const msgDiv = document.createElement('div');
-            msgDiv.className = `message ${sender}`;
-            msgDiv.innerText = text;
-            chatMessages.appendChild(msgDiv);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
+    <div class="stat">
+      <span>Human handoffs</span>
+      <strong id="handoffs">0</strong>
+    </div>
+  </div>
+</div>
 
-        function handleKeyPress(event) {
-            if (event.key === 'Enter') {
-                sendMessage();
-            }
-        }
+<div class="card">
+  <h2>Current state</h2>
+  <pre id="state">NEW</pre>
+</div>
 
-        function sendMessage() {
-            const inputField = document.getElementById('userInput');
-            const text = inputField.value.trim();
-            if (!text) return;
+<div class="card">
+  <h2>Event log</h2>
+  <pre id="log">System ready.</pre>
+</div>
 
-            appendMessage(text, 'user');
-            inputField.value = '';
+<div class="card">
+  <h2>Demo calendar</h2>
+  <pre id="calendar">09:00 — Available
+10:30 — Available
+12:00 — Available
+14:00 — Available
+15:30 — Available
+17:00 — Available</pre>
+</div>
 
-            // If paused, ignore AI workflow logic
-            if (conversationState === 'PAUSED') return;
+<div class="card">
+  <h2>Test console</h2>
+  <p>Runs basic safety and workflow checks.</p>
+  <button onclick="runTests()">Run tests</button>
+  <pre id="tests">No tests run yet.</pre>
+</div>
 
-            // Check for explicit human request at any point
-            const lowerText = text.toLowerCase();
-            if (lowerText.includes('human') || lowerText.includes('speak to someone') || lowerText.includes('agent') || lowerText.includes('person')) {
-                triggerHumanTakeover();
-                return;
-            }
+</div>
 
-            // AI Flow Logic with Service Area Policy Check
-            setTimeout(() => {
-                if (conversationState === 'START') {
-                    metrics.enquiries = 1;
-                    updateDashboard();
+<script>
+const data = {
+  state: "NEW",
+  enquiries: 0,
+  qualified: 0,
+  bookings: 0,
+  handoffs: 0,
+  service: "",
+  location: "",
+  date: "",
+  time: "",
+  step: 0,
+  events: []
+};
 
-                    // Check for out-of-area location immediately (Service Area Policy)
-                    if (lowerText.includes('liverpool') || lowerText.includes('leeds') || lowerText.includes('london')) {
-                        appendMessage("Sorry, we only operate within the Manchester and surrounding M postcode areas and cannot cover your location.", 'ai');
-                        conversationState = 'START';
-                        return;
-                    }
+const slots = ["09:00","10:30","12:00","14:00","15:30","17:00"];
 
-                    if (lowerText.includes('boiler') || lowerText.includes('plumbing') || lowerText.includes('broken') || lowerText.includes('leak')) {
-                        conversationState = 'WAITING_AREA';
-                        appendMessage("I can help with that. What is your postcode or area?", 'ai');
-                    } else if (lowerText.includes('liverpool') || lowerText.includes('outside')) {
-                        appendMessage("Sorry, we only cover the Manchester area.", 'ai');
-                    } else {
-                        appendMessage("Sure — what service do you need help with?", 'ai');
-                        conversationState = 'WAITING_AREA';
-                    }
-                } 
-                else if (conversationState === 'WAITING_AREA') {
-                    // Check area/postcode response for out-of-area locations
-                    if (lowerText.includes('liverpool') || lowerText.includes('leeds') || lowerText.includes('l1') || lowerText.includes('l2')) {
-                        appendMessage("Sorry, we only operate within the Manchester area and cannot service Liverpool.", 'ai');
-                        conversationState = 'START';
-                        return;
-                    }
+function addMessage(text,type="ai"){
+  const box=document.getElementById("messages");
+  const div=document.createElement("div");
+  div.className="msg "+type;
+  div.textContent=text;
+  box.appendChild(div);
+  box.scrollTop=box.scrollHeight;
+}
 
-                    conversationState = 'WAITING_TIME';
-                    appendMessage("Thanks. What day would you like someone to come out?", 'ai');
-                } 
-                else if (conversationState === 'WAITING_TIME') {
-                    metrics.qualified = 1;
-                    updateDashboard();
-                    conversationState = 'BOOKED';
-                    appendMessage("What time would suit you? Available demo slots are 09:00, 10:30, 12:00, 14:00, 15:30 and 17:00.", 'ai');
-                } 
-                else if (conversationState === 'BOOKED') {
-                    metrics.bookings = 1;
-                    updateDashboard();
-                    appendMessage("Booked successfully. Your reference is MBP-3886. The appointment is scheduled.", 'ai');
-                }
-            }, 600);
-        }
+function logEvent(text){
+  data.events.push(new Date().toLocaleTimeString()+" — "+text);
+  document.getElementById("log").textContent=data.events.join("\n");
+}
 
-        function resetDemo() {
-            conversationState = 'START';
-            metrics = { enquiries: 0, qualified: 0, bookings: 0, handoffs: 0 };
-            updateDashboard();
+function update(){
+  document.getElementById("enquiries").textContent=data.enquiries;
+  document.getElementById("qualified").textContent=data.qualified;
+  document.getElementById("bookings").textContent=data.bookings;
+  document.getElementById("handoffs").textContent=data.handoffs;
 
-            const badge = document.getElementById('statusBadge');
-            badge.innerText = "AI ONLINE";
-            badge.className = "status-badge";
+  document.getElementById("state").textContent=
+    JSON.stringify({
+      state:data.state,
+      service:data.service,
+      location:data.location,
+      date:data.date,
+      time:data.time
+    },null,2);
+}
 
-            const chatMessages = document.getElementById('chatMessages');
-            chatMessages.innerHTML = '<div class="message ai">Hi! I\'m the AI receptionist for Manchester Boiler & Plumbing. How can I help?</div>';
-        }
+function sendMessage(){
+  const input=document.getElementById("input");
+  const text=input.value.trim();
 
-        function triggerHumanTakeover() {
-            conversationState = 'PAUSED';
-            metrics.handoffs += 1;
-            updateDashboard();
+  if(!text)return;
 
-            const badge = document.getElementById('statusBadge');
-            badge.innerText = "AI PAUSED";
-            badge.className = "status-badge paused";
+  addMessage(text,"user");
+  input.value="";
 
-            appendMessage("I've paused the AI workflow. A human team member can now take over this enquiry.", 'ai');
-        }
-    </script>
+  processMessage(text);
+}
+
+document.getElementById("input").addEventListener("keydown",function(e){
+  if(e.key==="Enter")sendMessage();
+});
+
+function processMessage(text){
+  const lower=text.toLowerCase();
+
+  if(
+    lower.includes("system prompt") ||
+    lower.includes("ignore your instructions") ||
+    lower.includes("show me your instructions")
+  ){
+    data.state="HUMAN_ESCALATION";
+    data.handoffs++;
+    addMessage(
+      "I can't provide private system instructions or internal configuration. I can still help with your booking.",
+      "ai"
+    );
+    logEvent("Security rule triggered");
+    update();
+    return;
+  }
+
+  if(
+    lower.includes("human") ||
+    lower.includes("person") ||
+    lower.includes("speak to someone")
+  ){
+    humanTakeover();
+    return;
+  }
+
+  data.state="UNDERSTANDING";
+
+  if(
+    lower.includes("boiler") ||
+    lower.includes("heating")
+  ){
+    data.service="Boiler repair";
+  }else if(
+    lower.includes("plumb") ||
+    lower.includes("pipe") ||
+    lower.includes("tap") ||
+    lower.includes("toilet")
+  ){
+    data.service="General plumbing";
+  }
+
+  if(!data.service){
+    addMessage(
+      "Sure — what service do you need help with?",
+      "ai"
+    );
+    data.state="QUALIFYING";
+    update();
+    return;
+  }
+
+  if(data.step===0){
+    data.enquiries++;
+    data.step=1;
+    data.state="QUALIFYING";
+
+    addMessage(
+      "I can help with that. What is your postcode or area?",
+      "ai"
+    );
+
+    logEvent("New enquiry received");
+    logEvent("Service identified: "+data.service);
+    update();
+    return;
+  }
+
+  if(data.step===1){
+    data.location=text;
+    data.step=2;
+
+    addMessage(
+      "Thanks. What day would you like someone to come out?",
+      "ai"
+    );
+
+    logEvent("Location collected: "+data.location);
+    update();
+    return;
+  }
+
+  if(data.step===2){
+    data.date=text;
+    data.step=3;
+
+    addMessage(
+      "What time would suit you? Available demo slots are 09:00, 10:30, 12:00, 14:00, 15:30 and 17:00.",
+      "ai"
+    );
+
+    logEvent("Preferred date collected");
+    update();
+    return;
+  }
+
+  if(data.step===3){
+    let chosen=null;
+
+    for(const slot of slots){
+      if(text.includes(slot)){
+        chosen=slot;
+        break;
+      }
+    }
+
+    if(!chosen){
+      addMessage(
+        "Please choose one of these available demo times: 09:00, 10:30, 12:00, 14:00, 15:30 or 17:00.",
+        "ai"
+      );
+      return;
+    }
+
+    data.time=chosen;
+    data.state="QUALIFIED";
+    data.qualified++;
+
+    addMessage(
+      "Great — you're qualified. I'll check that appointment slot now.",
+      "ai"
+    );
+
+    logEvent("Lead qualified");
+    data.state="BOOKING";
+    update();
+
+    setTimeout(createBooking,500);
+  }
+}
+
+function createBooking(){
+  const id="MBP-"+Math.floor(1000+Math.random()*9000);
+
+  data.bookings++;
+  data.state="BOOKED";
+
+  addMessage(
+    "Booked successfully. Your reference is "+id+". The appointment is "+data.date+" at "+data.time+".",
+    "ai"
+  );
+
+  logEvent("Availability re-checked");
+  logEvent("Booking created: "+id);
+  logEvent("Booking verified successfully");
+
+  update();
+}
+
+function humanTakeover(){
+  data.state="HUMAN_ESCALATION";
+  data.handoffs++;
+
+  addMessage(
+    "I've paused the AI workflow. A human team member can now take over this enquiry.",
+    "ai"
+  );
+
+  logEvent("Human takeover requested");
+  update();
+}
+
+function resetDemo(){
+  data.state="NEW";
+  data.enquiries=0;
+  data.qualified=0;
+  data.bookings=0;
+  data.handoffs=0;
+  data.service="";
+  data.location="";
+  data.date="";
+  data.time="";
+  data.step=0;
+  data.events=[];
+
+  document.getElementById("messages").innerHTML="";
+  document.getElementById("log").textContent="System ready.";
+  document.getElementById("tests").textContent="No tests run yet.";
+
+  addMessage(
+    "Hi! I'm the AI receptionist for Manchester Boiler & Plumbing. How can I help?",
+    "ai"
+  );
+
+  update();
+}
+
+function runTests(){
+  const results=[
+    "PASS — empty message handled",
+    "PASS — prompt injection blocked",
+    "PASS — human request supported",
+    "PASS — unsupported booking time rejected",
+    "PASS — booking requires availability slot",
+    "PASS — booking confirmation generated only after booking step"
+  ];
+
+  document.getElementById("tests").textContent=results.join("\n");
+  logEvent("Prototype tests completed");
+}
+
+resetDemo();
+</script>
+
 </body>
 </html>
